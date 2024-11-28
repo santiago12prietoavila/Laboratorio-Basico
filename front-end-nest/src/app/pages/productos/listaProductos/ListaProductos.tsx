@@ -22,7 +22,6 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material';
-import { styled } from '@mui/system';
 import { Productos } from '@/app/types/Producto.type';
 import { Proveedores } from '@/app/types/Proveedor.type';
 import { Clientes } from '@/app/types/Clientes.type';
@@ -44,13 +43,13 @@ const style = {
   transform: 'translate(-50%, -50%)',
   width: 400,
   bgcolor: 'background.paper',
-  border: '2px solid #000',
+  border: '20px solid #000',
   boxShadow: 24,
   p: 4,
 };
 
 const ProductoLista: React.FC = () => {
-  const [productos, setProductos] = useState([]);
+  const [productos, setProductos] = useState<Productos[]>([]);
   const [nuevoProducto, setNuevoProducto] = useState<Omit<Productos, '_id'>>({
     nombre_producto: '',
     cantidad: 0,
@@ -59,7 +58,6 @@ const ProductoLista: React.FC = () => {
     cliente: [],
     activo: true,
   });
-
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [openModal, setOpenModal] = useState(false);
@@ -69,42 +67,58 @@ const ProductoLista: React.FC = () => {
   const [clientesSeleccionados, setClientesSeleccionados] = useState<string[]>([]);
   const [proveedores, setProveedores] = useState<Proveedores[]>([]);
   const [proveedoresSeleccionados, setProveedoresSeleccionados] = useState<string[]>([]);
-  const [producto, setProducto] = useState<Productos | null>(null);
 
   const obtenerClientes = async () => {
-    const response = await fetch('http://localhost:3000/api/clientes');
-    const data = await response.json();
-    setClientes(data);
+    try {
+      const response = await fetch('http://localhost:3000/api/clientes');
+      const data = await response.json();
+      setClientes(data);
+    } catch (error) {
+      console.error('Error al obtener clientes:', error);
+    }
   };
 
   const obtenerProveedores = async () => {
-    const response = await fetch('http://localhost:3000/api/proveedores');
-    const data = await response.json();
-    setProveedores(data);
+    try {
+      const response = await fetch('http://localhost:3000/api/proveedores');
+      const data = await response.json();
+      setProveedores(data);
+    } catch (error) {
+      console.error('Error al obtener proveedores:', error);
+    }
   };
 
   const obtenerProductos = async () => {
-    const response = await fetch('http://localhost:3000/api/productos');
-    const data = await response.json();
-    setProductos(data);
+    try {
+      const response = await fetch('http://localhost:3000/api/productos');
+      const data = await response.json();
+      setProductos(data);
+    } catch (error) {
+      console.error('Error al obtener productos:', error);
+    }
   };
 
   const crearProducto = async (data: Omit<Productos, '_id'>) => {
-    const response = await fetch('http://localhost:3000/api/productos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
+    try {
+      const response = await fetch('http://localhost:3000/api/productos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-    if (response.ok) {
-      setNuevoProducto({ nombre_producto: '', cantidad: 0, precio: 0, proveedor: [], cliente: [], activo: true });
-      setOpenModal(false);
-    } else {
-      const errorData = await response.json();
-      setErrorMessage(errorData.message || 'Error al crear producto');
-      setOpenSnackbar(true);
+      if (response.ok) {
+        setNuevoProducto({ nombre_producto: '', cantidad: 0, precio: 0, proveedor: [], cliente: [], activo: true });
+        setOpenModal(false);
+        obtenerProductos();
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || 'Error al crear producto');
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      console.error('Error al crear producto:', error);
     }
   };
 
@@ -120,30 +134,104 @@ const ProductoLista: React.FC = () => {
       cancelButtonText: 'Cancelar',
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const response = await fetch(`http://localhost:3000/api/productos/delete/${id}`, {
-          method: 'DELETE',
-        });
+        try {
+          const response = await fetch(`http://localhost:3000/api/productos/delete/${id}`, {
+            method: 'DELETE',
+          });
 
-        if (response.ok) {
-          Swal.fire('Eliminado!', 'El producto ha sido eliminado.', 'success');
-        } else {
-          setErrorMessage('Error al eliminar producto');
-          setOpenSnackbar(true);
+          if (response.ok) {
+            Swal.fire('Eliminado!', 'El producto ha sido eliminado.', 'success');
+            obtenerProductos();
+          } else {
+            setErrorMessage('Error al eliminar producto');
+            setOpenSnackbar(true);
+          }
+        } catch (error) {
+          console.error('Error al eliminar producto:', error);
         }
       }
     });
   };
 
+  const toggleActivo = async (id: string, activo: boolean) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/productos/${activo ? 'deactivate' : 'activate'}/${id}`,
+        { method: 'PUT' }
+      );
+
+      if (response.ok) {
+        obtenerProductos();
+      } else {
+        setErrorMessage('Error al cambiar el estado del producto');
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      console.error('Error al cambiar el estado del producto:', error);
+    }
+  };
+
+  const actualizarProducto = async (id: string, data: Omit<Productos, '_id'>) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/productos/update/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        obtenerProductos();
+        setOpenEditModal(false);
+        setProductoEditado(null);
+      } else {
+        const errorData = await response.json();
+        setErrorMessage(errorData.message || 'Error al actualizar producto');
+        setOpenSnackbar(true);
+      }
+    } catch (error) {
+      console.error('Error al actualizar producto:', error);
+    }
+  };
 
   const handleClienteChange = (event: SelectChangeEvent<string[]>) => {
-    const { target: { value }, } = event;
-    setClientesSeleccionados(value as string[]); // Asegúrate de que sea un array de strings
+    setClientesSeleccionados(event.target.value as string[]);
   };
 
   const handleProveedorChange = (event: SelectChangeEvent<string[]>) => {
-    const { target: { value }, } = event;
-    setProveedoresSeleccionados(value as string[]); // Asegúrate de que sea un array de strings
+    setProveedoresSeleccionados(event.target.value as string[]);
   };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNuevoProducto((prev) => ({
+      ...prev,
+      [name]: name === 'cantidad' || name === 'precio' ? Number(value) : value,
+    }));
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setProductoEditado((prev) => ({
+      ...prev!,
+      [name]: name === 'cantidad' || name === 'precio' ? Number(value) : value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const productoData = {
+      ...nuevoProducto,
+      cliente: clientesSeleccionados.map((id) => obtenerClientePorId(id)),
+      proveedor: proveedoresSeleccionados.map((id) => obtenerProveedorPorId(id)),
+    };
+    crearProducto(productoData);
+  };
+
+  const obtenerClientePorId = (id: string): Clientes =>
+    clientes.find((cliente) => cliente.id_cliente === id)!;
+
+  const obtenerProveedorPorId = (id: string): Proveedores =>
+    proveedores.find((proveedor) => proveedor.id_proveedor === id)!;
 
   useEffect(() => {
     obtenerProductos();
@@ -156,28 +244,15 @@ const ProductoLista: React.FC = () => {
     }
   }, [openModal]);
 
-  const handleCloseSnackbar = () => {
-    setErrorMessage('');
-    setOpenSnackbar(false);
-  };
+  const handleCloseSnackbar = () => setOpenSnackbar(false);
 
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
+  const handleOpenModal = () => setOpenModal(true);
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
-    setNuevoProducto({ nombre_producto: '', cantidad: 0, precio: 0, proveedor: [], cliente: [], activo: true });
-    setProveedoresSeleccionados([]);
-    setClientesSeleccionados([]);
-  };
+  const handleCloseModal = () => setOpenModal(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNuevoProducto(prev => ({
-      ...prev,
-      [name]: name === 'nombre_producto' ? value.toUpperCase() : name === 'cantidad' || name === 'precio' ? Number(value) : value,
-    }));
+  const handleCloseEditModal = () => {
+    setOpenEditModal(false);
+    setProductoEditado(null);
   };
 
   const handleOpenEditModal = (producto: Productos) => {
@@ -185,87 +260,11 @@ const ProductoLista: React.FC = () => {
     setOpenEditModal(true);
   };
 
-
-  const handleCloseEditModal = () => {
-    setOpenEditModal(false);
-    setProductoEditado(null);
-  };
-
-  const actualizarProducto = async (id: string, data: Omit<Productos, 'id'>) => {
-    const response = await fetch(`http://localhost:3000/api/productos/update/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (response.ok) {
-      await obtenerProductos();
-      handleCloseEditModal();
-    } else {
-      const errorData = await response.json();
-      setErrorMessage(errorData.message || 'Error al actualizar producto');
-      setOpenSnackbar(true);
-    }
-  };
-
-
-
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    if (productoEditado) {
-      setProductoEditado((prev) => ({
-        ...prev!,
-        [name]: name === 'nombreProducto' ? value.toUpperCase() : name === 'cantidad' || name === 'precio' ? Number(value) : value,
-      }));
-    }
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const clientesSeleccionadosDetalles = clientesSeleccionados.map(id => obtenerClientePorId(id));
-    const proveedoresSeleccionadosDetalles = proveedoresSeleccionados.map(id => obtenerProveedorPorId(id));
-
-    const productoData = {
-      ...nuevoProducto,
-      cliente: clientesSeleccionadosDetalles,
-      proveedor: proveedoresSeleccionadosDetalles,
-    };
-    crearProducto(productoData);
-  };
-
-  const obtenerClientePorId = (id: string): Clientes => {
-    return clientes.find(cliente => cliente.id_cliente === id) as Clientes;
-  };
-
-  const obtenerProveedorPorId = (id: string): Proveedores => {
-    return proveedores.find(proveedor => proveedor.id_proveedor === id) as Proveedores;
-  };
-
-  const toggleActivo = async (id: string, activo: boolean) => {
-    const response = await fetch(
-      `http://localhost:3000/api/productos/${activo ? 'deactivate' : 'activate'}/${id}`,
-      {
-        method: 'PUT',
-      }
-    );
-
-    if (response.ok) {
-      await obtenerProductos();
-    } else {
-      setErrorMessage('Error al cambiar el estado del producto');
-      setOpenSnackbar(true);
-    }
-  };
-
   return (
     <Container
       maxWidth='lg'
       style={{
-        marginTop: "20px",
+        marginTop: "70px",
         height: "90vh",
         display: "flex",
         justifyContent: "center",
@@ -273,6 +272,7 @@ const ProductoLista: React.FC = () => {
         flexDirection: "column",
         background: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)",
         paddingBottom: "20px",
+        borderRadius: "100px",
       }}
     >
       <section style={{ width: '100%', position: 'relative' }}>
@@ -321,23 +321,8 @@ const ProductoLista: React.FC = () => {
                       {producto.activo ? "Activo" : "Desactivado"}
                     </span>
                   </TableCell>
-
-                  <TableCell>
-                    {Array.isArray(producto.cliente) && producto.cliente.length > 0 ? (
-                      producto.cliente.map((cli) => <div key={cli.id_cliente}>{cli.nombre_cliente}</div>)
-                    ) : (
-                      "Sin clientes"
-                    )}
-                  </TableCell>
-
-                  <TableCell>
-                    {Array.isArray(producto.proveedor) && producto.proveedor.length > 0 ? (
-                      producto.proveedor.map((prov) => <div key={prov.id_proveedor}>{prov.nombre_proveedor}</div>)
-                    ) : (
-                      "Sin proveedores"
-                    )}
-                  </TableCell>
-
+                  <TableCell>{producto.cliente}</TableCell>
+                  <TableCell>{producto.proveedor}</TableCell>
                   <TableCell>
                     <Tooltip title="Editar producto">
                       <Button onClick={() => handleOpenEditModal(producto)}>
@@ -373,7 +358,7 @@ const ProductoLista: React.FC = () => {
       </TableContainer>
       {/* Modal para agregar producto */}
       <Modal open={openModal} onClose={handleCloseModal}>
-        <Box sx={{ ...style, backgroundColor: 'white', color: 'black', padding: '20px', borderRadius: '8px' }}>
+        <Box sx={{ ...style, backgroundColor: 'white', color: 'black', padding: '20px', borderRadius: '20px' }}>
           <Typography variant="h6" component="h2" sx={{ marginBottom: '20px', fontWeight: 'bold' }}>
             Agregar Producto
           </Typography>
@@ -522,6 +507,3 @@ const ProductoLista: React.FC = () => {
 };
 
 export default ProductoLista;
-
-
-

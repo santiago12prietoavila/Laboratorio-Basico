@@ -9,7 +9,7 @@ export class Productos extends Document implements IProductos {
 
     @Prop({ required: true })
     nombre_producto?: string;
-
+        
     @Prop({ required: true })
     cantidad?: number;
 

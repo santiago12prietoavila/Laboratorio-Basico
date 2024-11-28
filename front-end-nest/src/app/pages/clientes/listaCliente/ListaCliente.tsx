@@ -28,7 +28,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
     backgroundColor: "#f9f9f9",
     padding: theme.spacing(3),
     [theme.breakpoints.up("md")]: {
-        width: "75%",
+        width: "90%",
         margin: "auto",
     },
 }));
@@ -207,9 +207,9 @@ const ClienteLista = () => {
     }
 
     return (
-        <Container maxWidth="lg" style={{ marginTop: "10px" }}>
+        <Container maxWidth="lg" style={{ marginTop: "90px" }}>
             <section style={{
-                background: "linear-gradient(135deg, #61a1bc 0%, #2575fc 100%)",
+                background: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)", // Gradiente de colores
                 padding: "70px",
                 borderRadius: "100px",
                 color: "#fff"

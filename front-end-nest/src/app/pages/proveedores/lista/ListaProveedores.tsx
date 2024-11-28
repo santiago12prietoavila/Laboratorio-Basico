@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useEffect } from "react";
 import {
@@ -18,22 +17,24 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/system";
 
+// Estilo para las tarjetas dinámicas
 const StyledCard = styled(Card)(({ theme }) => ({
   transition: "transform 0.3s ease, box-shadow 0.3s ease",
   "&:hover": {
-    transform: "translateY(-8px)",
+    transform: "translateY(-8px)", // Movimiento suave al hover
   },
-  width: "100%",
+  width: "100%", // Ancho completo en pantallas pequeñas
   marginBottom: theme.spacing(3),
-  borderRadius: "20px",
-  backgroundColor: "#f9f9f9",
-  padding: theme.spacing(3),
+  borderRadius: "20px", // Bordes más redondeados
+  backgroundColor: "#f9f9f9", // Fondo suave para las tarjetas
+  padding: theme.spacing(3), // Espaciado interno
   [theme.breakpoints.up("md")]: {
-    width: "75%",
-    margin: "auto",
+    width: "75%", // Ancho más grande en pantallas medianas y grandes
+    margin: "auto", // Centrado horizontal en pantallas más grandes
   },
 }));
 
+// Estilo para los botones de acción personalizados
 const ActionButton = styled(Button)(({ theme }) => ({
   margin: theme.spacing(1),
   padding: theme.spacing(1.5),
@@ -56,7 +57,7 @@ const DeactivateButton = styled(ActionButton)({
   backgroundColor: "#ff9800",
   color: "#fff",
   "&:hover": {
-    backgroundColor: "#f57c00"
+    backgroundColor: "#f57c00",
   },
 });
 
@@ -64,7 +65,7 @@ const DeleteButton = styled(ActionButton)({
   backgroundColor: "#f44336",
   color: "#fff",
   "&:hover": {
-    backgroundColor: "#d32f2f"
+    backgroundColor: "#d32f2f",
   },
 });
 
@@ -90,10 +91,13 @@ const ProveedorLista = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [actionType, setActionType] = useState<'create' | 'update'>('create');
 
+  useEffect(() => {
+    fetchProveedores();
+  }, []);
 
   const fetchProveedores = async () => {
     try {
-      const respuesta = await fetch('http://localhost:3000/api/Proveedores');
+      const respuesta = await fetch('http://localhost:3000/api/proveedores');
       if (!respuesta.ok) throw new Error('Error al obtener todos los proveedores');
       const data = await respuesta.json();
       setProveedores(data);
@@ -102,12 +106,7 @@ const ProveedorLista = () => {
       setErrorMessage('Error al obtener los proveedores');
       setOpenSnackbar(true);
     }
-  }
-
-
-  useEffect(() => {
-    fetchProveedores();
-  }, []);
+  };
 
   const handleOpenModal = (proveedor: any = null) => {
     setSelectedProveedor(proveedor);
@@ -152,19 +151,16 @@ const ProveedorLista = () => {
         url = 'http://localhost:3000/api/proveedores';
         method = 'POST';
       } else if (actionType === 'update') {
-        url = 'http://localhost:3000/api/proveedores/update/${selectedProveedor._id}';
+        url = `http://localhost:3000/api/proveedores/update/${selectedProveedor._id}`;
         method = 'PUT';
       }
-
       const response = await fetch(`${url}`, {
         method: method,
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify(formValues),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al guardar el proveedor');
@@ -189,79 +185,79 @@ const ProveedorLista = () => {
 
   const handleDeactivate = async (id: string) => {
     try {
-      await fetch(`https://localhost:3000/api/proveedores/deactivate/${id}`, { method: 'PUT' });
+      await fetch(`http://localhost:3000/api/proveedores/deactive/${id}`, { method: 'PUT' });
       fetchProveedores();
     } catch (error) {
-      console.error("Error al desactivar el proveedor: ", error);
+      console.error("Error al desactivar el proveedor:", error);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await fetch(`http://localhost:300/api/proveedores/delete/${id}`, { method: 'DELETE' });
+      await fetch(`http://localhost:3000/api/proveedores/delete/${id}`, { method: 'DELETE' });
       fetchProveedores();
     } catch (error) {
-      console.error("Erroor al eliminar al proveedor: ", error);
+      console.error("Error al eliminar el proveedor:", error);
     }
   };
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
     setErrorMessage("");
-  }
+  };
 
   return (
-    <Container maxWidth="lg" style={{ marginTop: "10px" }}>
+    <Container maxWidth="lg" style={{ marginTop: "100px" }}>
       <section style={{
-        background: "linear-gradient(135deg, #61a1bc 0%, #2575fc 100%)", // Gradiente de colores
-        padding: "70px",
-        borderRadius: "100px", // Bordes redondeados
+        background: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)", // Gradiente de colores
+        padding: "20px", // Espaciado interno
+        borderRadius: "70px", // Bordes redondeados
         color: "#fff" // Color del texto
       }}>
         <Button
           variant="contained"
           color="primary"
           onClick={() => handleOpenModal()}
-          style={{ marginBottom: "20px" }} // Espaciado adicional
+          style={{ marginBottom: "30px" }} // Espaciado adicional
         >
           Crear Proveedor
         </Button>
         <Grid container spacing={4}>
           {proveedores.map((proveedor: any) => (
-            <Grid item xs={12} md={6} key={proveedor.id}>
+            <Grid item xs={12} md={6} key={proveedor._id}>
               <StyledCard>
                 <CardContent>
                   <Typography variant="h6" component="div" gutterBottom>
                     {proveedor.nombre_proveedor}
                   </Typography>
-                  <Typography variant="body1" color="textSecondary">
+                  <Typography variant="body2" color="textSecondary">
                     Email: {proveedor.email_proveedor}
                   </Typography>
-                  <Typography variant="body1" color="textSecondary">
+                  <Typography variant="body2" color="textSecondary">
                     Celular: {proveedor.celular_proveedor}
                   </Typography>
-                  <Typography
-                    variant="body2"
-                    style={{
+                  <Typography 
+                    variant="body2" 
+                    style={{ 
                       color: proveedor.activo_proveedor ? "#4caf50" : "#f44336", // Verde si está activo, rojo si está inactivo
                       fontWeight: "bold"
                     }}
                   >
                     {proveedor.activo_proveedor ? "Activo" : "Desactivado"}
                   </Typography>
-                  <UpdateButton onClick={() => handleOpenModal(proveedor.id)}>
+                  <UpdateButton onClick={() => handleOpenModal(proveedor)}>
                     Actualizar
                   </UpdateButton>
                   {proveedor.activo_proveedor ? (
-                    <DeactivateButton onClick={() => handleDeactivate(proveedor.id)}>
+                    <DeactivateButton onClick={() => handleDeactivate(proveedor._id)}>
                       Desactivar
                     </DeactivateButton>
                   ) : (
-                    <ActivateButton onClick={() => handleActivate(proveedor.id)}>
+                    <ActivateButton onClick={() => handleActivate(proveedor._id)}>
                       Activar
                     </ActivateButton>
                   )}
-                  <DeleteButton onClick={() => handleDelete(proveedor.id)}>
+                  <DeleteButton onClick={() => handleDelete(proveedor._id)}>
                     Eliminar
                   </DeleteButton>
                 </CardContent>
@@ -270,8 +266,9 @@ const ProveedorLista = () => {
           ))}
         </Grid>
       </section>
+
       <Dialog open={openModal} onClose={handleCloseModal}>
-        <DialogTitle>{actionType === "create" ? "Crear Proveedor" : "Actualizar Proveedor"}</DialogTitle>
+        <DialogTitle>{actionType === 'create' ? "Crear Proveedor" : "Actualizar Proveedor"}</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
@@ -301,10 +298,11 @@ const ProveedorLista = () => {
         <DialogActions>
           <Button onClick={handleCloseModal} color="secondary">Cancelar</Button>
           <Button onClick={handleSaveProveedor} color="primary">
-            {actionType === "create" ? "Crear" : "Actualizar"}
+            {actionType === 'create' ? "Crear" : "Actualizar"}
           </Button>
         </DialogActions>
       </Dialog>
+
       {/* Snackbar para mensajes */}
       <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={handleCloseSnackbar}>
         <Alert severity={errorMessage ? "error" : "success"} onClose={handleCloseSnackbar}>
@@ -313,7 +311,6 @@ const ProveedorLista = () => {
       </Snackbar>
     </Container>
   );
-
-}
+};
 
 export default ProveedorLista;

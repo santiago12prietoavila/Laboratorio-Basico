@@ -13,7 +13,7 @@ import {
     Divider,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { styled, typography } from '@mui/system';
+import { styled } from '@mui/system';
 import Link from 'next/link';
 
 // Estilos personalizados para los elementos del sidebar
@@ -23,21 +23,26 @@ const SidebarContainer = styled(Box)({
     height: "100vh",
     color: "#fff",
     padding: "20px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
     transition: "all 0.3s ease-in-out",
 });
 
 const SidebarHeader = styled(Typography)({
-    fontSize: "1.5rem",
+    fontSize: "1.75rem",
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: "1rem",
+    marginBottom: "1.5rem",
     color:"#fff",
+    letterSpacing: "1px",
 });
 
 const SidebarItem = styled(ListItem)({
     padding: "15px 10px",
     margin: "10px 0",
     borderRadius: "10px",
+    width: "100%",
     transition: "background-color 0.3s ease, transform 0.3s ease",
     "&:hover": {
         backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -46,10 +51,27 @@ const SidebarItem = styled(ListItem)({
 });
 
 const SidebarDivider = styled(Divider)({
-    backgroundColor: "rgba(255, 255, 255, 0.2",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     margin: "10px 0",
+    width: "100%",
 });
 
+// Estilos del AppBar
+const StyledAppBar = styled(AppBar)({
+    background: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.3s ease",
+    zIndex: 1201, // Asegura que esté por encima del Drawer
+});
+
+// Estilos del botón del menú
+const MenuButton = styled(IconButton)({
+    color: "#fff",
+    transition: "transform 0.3s ease-in-out",
+    "&:hover": {
+        transform: "scale(1.1)",
+    },
+});
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -95,13 +117,13 @@ const Navbar = () => {
 
     return (
         <>
-            <AppBar position="fixed" sx={{ background: "transparent", boxShadoow: "none" }}>
+            <StyledAppBar position="fixed">
                 <Toolbar>
-                    <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer(true)}>
-                        <MenuIcon sx={{ color: "#fff" }} />
-                    </IconButton>
+                    <MenuButton edge="start" aria-label="menu" onClick={toggleDrawer(true)}>
+                        <MenuIcon />
+                    </MenuButton>
                 </Toolbar>
-            </AppBar>
+            </StyledAppBar>
 
             <Drawer anchor="left" open={isOpen} onClose={toggleDrawer(false)}>
                 {sidebarContent}
