@@ -8,7 +8,7 @@ export class CreateDtoBook implements IBook {
     titulo: string;
 
     @IsNotEmpty()
-    @IsString()
+    @IsString() 
     descripcion: string;
 
     @IsNotEmpty()
